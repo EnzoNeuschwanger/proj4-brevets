@@ -53,13 +53,18 @@ def _calc_times():
     """
     app.logger.debug("Got a JSON request")
     km = request.args.get('km', 999, type=float)
+    race_distance = request.args.get('race_distance', 999, type=float)
+    #time_zone = request.args.get('utc_offset')
+    date = arrow.get(request.args.get('day') + ' ' + request.args.get('time'), 'YYYY-MM-DD HH:mm', tzinfo='utc')
+    print(date)
     app.logger.debug("km={}".format(km))
+    app.logger.debug("brevet={}".format(race_distance))
     app.logger.debug("request.args: {}".format(request.args))
-    # FIXME: These probably aren't the right open and close times
-    # and brevets may be longer than 200km
-    open_time = acp_times.open_time(km, 200, arrow.now().isoformat)
-    close_time = acp_times.close_time(km, 200, arrow.now().isoformat)
+    app.logger.debug("date: {}".format(date))
+    open_time = acp_times.open_time(km, race_distance, date)
+    close_time = acp_times.close_time(km, race_distance, date)
     result = {"open": open_time, "close": close_time}
+    print(f"Open: {open_time}, Close: {close_time}")
     return flask.jsonify(result=result)
 
 
@@ -70,5 +75,6 @@ if app.debug:
     app.logger.setLevel(logging.DEBUG)
 
 if __name__ == "__main__":
+    app.debug = True
     print("Opening for global access on port {}".format(CONFIG.PORT))
     app.run(port=CONFIG.PORT, host="0.0.0.0")

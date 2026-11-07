@@ -124,17 +124,30 @@
   // stash them in hidden fields.) 
   function calc_times(control) {
     var km = control.find("input[name='km']").val();
+    var race_distance = $(brevet_dist_km).val();
+    var base_date = $(begin_date).val();
+    var base_time = $(begin_time).val();
     var open_time_field = control.find("input[name='open']");
     var close_time_field = control.find("input[name='close']");
+    var stats = control.find("td[class='notes']");
+	  //window.console.log(control);
     
-    $.getJSON(TIME_CALC_URL, { km: km }, 
+    $.getJSON(TIME_CALC_URL, { km: km, race_distance: race_distance, time: base_time, day: base_date}, 
       // response handler
       function(data) {
          var times = data.result;
          console.log("Got a response: " +  times);
          console.log("Response.open = " + times.open);
-         open_time_field.val( moment(times.open).format("ddd M/D H:mm"));
-         close_time_field.val( moment(times.close).format("ddd M/D H:mm"));
+	 console.log("Response.open = " + times.close);
+	 //console.log(moment(times.open));
+	 //console.log(moment(times.close));
+	      if(times.open != "NEGATIVE_DISTANCE" && times.close != "NEGATIVE_DISTANCE"){
+			stats.html('')
+         		open_time_field.val( moment.utc(times.open).format("ddd M/D H:mm "));
+         		close_time_field.val( moment.utc(times.close).format("ddd M/D H:mm "));
+	      }else{
+		stats.html("Error: Negative Distance!");
+	      }
        } // end of handler function
      );// End of getJSON
     }
